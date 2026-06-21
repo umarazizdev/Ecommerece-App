@@ -37,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: WaterDropNavBar(
           waterDropColor: Colors.black,
           backgroundColor: Colors.white,
-          onButtonPressed: (index) {
+          onItemSelected: (index) {
             setState(() {
               selectedIndex = index;
             });

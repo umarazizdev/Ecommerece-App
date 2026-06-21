@@ -136,6 +136,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       if (value == null || value.isEmpty) {
                         return "Please Enter Product Name";
                       }
+                      return null;
                     }),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
@@ -172,6 +173,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       if (value == null || value.isEmpty) {
                         return "Please Enter Product description";
                       }
+                      return null;
                     }),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
@@ -208,6 +210,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       if (value == null || value.isEmpty) {
                         return "Please Enter Product Price";
                       }
+                      return null;
                     }),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
