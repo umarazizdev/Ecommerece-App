@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../constants/firebase_paths.dart';
 import '../main.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-  CollectionReference users = FirebaseFirestore.instance.collection('products');
+  CollectionReference users = FirebasePaths.productsCollection;
   XFile? singleImage;
   chooseImage() async {
     return await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -26,43 +26,54 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return image.path.split("/").last;
   }
 
-  Future<String> uploadImage(XFile image) async {
-    Reference db = FirebaseStorage.instance.ref("image/${getImageName(image)}");
+  Future<void> uploadImage(XFile image) async {
+    try {
+      EasyLoading.show(status: 'Uploading product...');
+      final db = FirebasePaths.productImageRef(getImageName(image));
+      await db.putFile(File(image.path));
+      final imageUrl = await db.getDownloadURL();
 
-    await db.putFile(File(image.path));
-    return await db.getDownloadURL().then((value) async {
-      users
-          .add({
-            'image': value,
-            'name': name.text,
-            'description': description.text,
-            'price': price.text,
-            'star1': 0,
-            'star2': 0,
-            'star3': 0,
-            'star4': 0,
-            'star5': 0,
-            'publish': false,
-            'uid': box.read('uid')
-          })
-          .then((value) {
-            print('Product Edited');
-            EasyLoading.showToast("Product Edited");
-          })
-          .whenComplete(() => EasyLoading.showSuccess("Successfully Added"))
-          .catchError((error) {
-            print("failedtoadduser: $error");
-            EasyLoading.showToast("failed to add product: $error");
-          });
+      await users.add({
+        'image': imageUrl,
+        'name': name.text.trim(),
+        'description': description.text.trim(),
+        'price': price.text.trim(),
+        'star1': 0,
+        'star2': 0,
+        'star3': 0,
+        'star4': 0,
+        'star5': 0,
+        'publish': false,
+        'uid': box.read('uid'),
+      });
 
-      return '';
-    });
+      name.clear();
+      description.clear();
+      price.clear();
+      if (mounted) {
+        setState(() => singleImage = null);
+      }
+      EasyLoading.showSuccess('Successfully Added');
+    } catch (error) {
+      EasyLoading.showError('Failed to add product: $error');
+    } finally {
+      EasyLoading.dismiss();
+    }
   }
 
   final _formKey = GlobalKey<FormState>();
-  var name = TextEditingController();
-  var description = TextEditingController();
-  var price = TextEditingController();
+  final name = TextEditingController();
+  final description = TextEditingController();
+  final price = TextEditingController();
+
+  @override
+  void dispose() {
+    name.dispose();
+    description.dispose();
+    price.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,6 +86,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
         elevation: 0,
         backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
@@ -253,14 +265,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           color: Colors.white,
                           fontWeight: FontWeight.w500),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         if (singleImage != null &&
                             singleImage!.path.isNotEmpty) {
-                          EasyLoading.show();
-                          uploadImage(singleImage!);
+                          await uploadImage(singleImage!);
                         } else {
-                          EasyLoading.showToast("Please Select Image");
+                          EasyLoading.showToast('Please Select Image');
                         }
                       }
                     },

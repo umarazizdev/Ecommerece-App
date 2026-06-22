@@ -1,4 +1,7 @@
+import 'package:addproduct/constants/firebase_paths.dart';
+import 'package:addproduct/main.dart';
 import 'package:addproduct/screens/productdetail.dart';
+import 'package:addproduct/widgets/product_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -14,7 +17,13 @@ class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchcontroller = TextEditingController();
   String search = '';
   final Stream<QuerySnapshot> _usersStream =
-      FirebaseFirestore.instance.collection('products').snapshots();
+      FirebasePaths.productsCollection.snapshots();
+
+  String get _userName {
+    final name = box.read('name')?.toString();
+    if (name != null && name.isNotEmpty) return name;
+    return 'Guest';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,23 +35,20 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Hi, Umer",
-                  style: TextStyle(
-                      fontSize: 15.5,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.bold),
+                Text(
+                  "Hi, $_userName",
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
                 const Text(
                   "WellCome Back",
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
                 SizedBox(
                   height: 45,
                   child: TextFormField(
@@ -133,17 +139,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Column(
                                 children: [
-                                  Container(
+                                  ProductNetworkImage(
+                                    url: data['image']?.toString(),
                                     height: 160,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: NetworkImage(
-                                          data['image'],
-                                        ),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                    width: double.infinity,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   const SizedBox(
                                     height: 2,
@@ -184,17 +184,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               child: Column(
                                 children: [
-                                  Container(
+                                  ProductNetworkImage(
+                                    url: data['image']?.toString(),
                                     height: 160,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: NetworkImage(
-                                          data['image'],
-                                        ),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                    width: double.infinity,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   const SizedBox(
                                     height: 2,

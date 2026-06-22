@@ -1,6 +1,8 @@
+import 'package:addproduct/constants/firebase_paths.dart';
+import 'package:addproduct/widgets/favorite_toggle_button.dart';
+import 'package:addproduct/widgets/product_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class ReadData extends StatefulWidget {
   const ReadData({super.key});
@@ -11,8 +13,7 @@ class ReadData extends StatefulWidget {
 
 class _ReadDataState extends State<ReadData> {
   final Stream<QuerySnapshot> _usersStream =
-      FirebaseFirestore.instance.collection('products').snapshots();
-  CollectionReference users = FirebaseFirestore.instance.collection('favorite');
+      FirebasePaths.productsCollection.snapshots();
 
   @override
   Widget build(BuildContext context) {
@@ -44,37 +45,16 @@ class _ReadDataState extends State<ReadData> {
                         children: [
                           Stack(
                             children: [
-                              SizedBox(
+                              ProductNetworkImage(
+                                url: data['image']?.toString(),
                                 height: 250,
                                 width: double.infinity,
-                                child: Image.network(
-                                  data['image'],
-                                  fit: BoxFit.cover,
-                                ),
                               ),
                               Positioned(
                                 right: 0,
-                                child: IconButton(
-                                  onPressed: () {
-                                    users.add({
-                                      'image': data['image'],
-                                      'name': data['name'],
-                                      'description': data['description'],
-                                      'price': data['price']
-                                    }).then((value) {
-                                      print("User Added");
-                                      EasyLoading.showToast("User Added");
-                                    }).catchError((error) {
-                                      EasyLoading.showError(
-                                          "Failed to add user: $error");
-
-                                      print("Failed to add user: $error");
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                  ),
+                                child: FavoriteToggleButton(
+                                  productId: document.id,
+                                  productData: data,
                                 ),
                               ),
                             ],

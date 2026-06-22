@@ -1,0 +1,263 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/user_data/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && userDoc().role == 'super-admin';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && userDoc().role == 'admin';
+    }
+
+    function isSubAdmin() {
+      return isSignedIn() && userDoc().role == 'sub-admin';
+    }
+
+    function isAdminUser() {
+      return isSuperAdmin() || isAdmin();
+    }
+
+    function isStaffUser() {
+      return isAdminUser() || isSubAdmin();
+    }
+
+    function subAdminStaffId() {
+      return userDoc().staffMemberId;
+    }
+
+    function isAssignedSubAdminComplaint() {
+      return isSubAdmin()
+        && subAdminStaffId() != ''
+        && resource.data.assignedStaffId == subAdminStaffId();
+    }
+
+    function isValidUserCreate() {
+      return request.resource.data.role == 'student'
+        && (
+          request.resource.data.approvalStatus == 'approved'
+          || (
+            request.resource.data.approvalStatus == 'pending'
+            && request.resource.data.requestedRole in ['admin', 'sub-admin']
+          )
+        );
+    }
+
+    match /user_data/{userId} {
+      allow read: if isOwner(userId) || isAdminUser();
+      allow create: if isOwner(userId) && isValidUserCreate();
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.isBlocked == resource.data.get('isBlocked', false)
+        && request.resource.data.staffMemberId == resource.data.get('staffMemberId', '')
+        && request.resource.data.approvalStatus == resource.data.get('approvalStatus', 'approved')
+        && request.resource.data.requestedRole == resource.data.get('requestedRole', '');
+      allow update: if isAdminUser() && userId != request.auth.uid;
+      allow delete: if isOwner(userId) || isAdminUser();
+    }
+
+    match /complaints/{complaintId} {
+      allow read: if isSignedIn() && resource.data.studentUid == request.auth.uid;
+      allow read: if isAdminUser();
+      allow read: if isAssignedSubAdminComplaint();
+      allow create: if isSignedIn()
+        && request.resource.data.studentUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isAdminUser() || isStudentFeedbackUpdate() || isSubAdminComplaintUpdate() || isStudentAttachmentUpdate();
+      allow delete: if isAdminUser() || isOwnerPendingComplaintDelete();
+    }
+
+    function isStudentAttachmentUpdate() {
+      return isSignedIn()
+        && resource.data.studentUid == request.auth.uid
+        && resource.data.status == 'pending'
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.studentUid == resource.data.studentUid
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['attachmentUrls', 'updatedAt']);
+    }
+
+    function isOwnerPendingComplaintDelete() {
+      return isSignedIn()
+        && resource.data.studentUid == request.auth.uid
+        && resource.data.status == 'pending'
+        && resource.data.get('attachmentUrls', []).size() == 0;
+    }
+
+    function isStudentFeedbackUpdate() {
+      return isSignedIn()
+        && resource.data.studentUid == request.auth.uid
+        && resource.data.status == 'resolved'
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.studentUid == resource.data.studentUid
+        && (resource.data.get('studentRating', 0) == 0)
+        && request.resource.data.studentRating >= 1
+        && request.resource.data.studentRating <= 5
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['studentRating', 'studentFeedback', 'feedbackSubmittedAt', 'updatedAt']);
+    }
+
+    function isSubAdminComplaintUpdate() {
+      return isAssignedSubAdminComplaint()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'adminRemarks', 'timeline', 'updatedAt']);
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid
+            || (resource.data.recipientRole == 'admin' && isAdminUser())
+            || (resource.data.recipientRole == 'super-admin' && isSuperAdmin()));
+      allow create: if isSignedIn();
+      allow update: if isSignedIn()
+        && (resource.data.userId == request.auth.uid
+            || (resource.data.recipientRole == 'admin' && isAdminUser())
+            || (resource.data.recipientRole == 'super-admin' && isSuperAdmin()));
+      allow delete: if isAdminUser();
+    }
+
+    match /staff_members/{staffId} {
+      allow read: if isStaffUser();
+      allow create: if isAdminUser()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.designation is string
+        && request.resource.data.designation.size() >= 2
+        && request.resource.data.isActive == true;
+      allow update: if isAdminUser()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.designation is string
+        && request.resource.data.designation.size() >= 2;
+      allow delete: if isAdminUser();
+    }
+
+    // =========================================================================
+    // Designer-Digger app only (added below — other app rules above unchanged)
+    // =========================================================================
+
+    match /digger_users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /digger_products/{productId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.uid == request.auth.uid;
+    }
+
+    match /digger_promotions/{promotionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.uid == request.auth.uid;
+    }
+
+    match /digger_cartitems/{itemId} {
+      allow read: if isSignedIn()
+        && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.uid == request.auth.uid;
+    }
+
+    match /digger_favourites/{itemId} {
+      allow read: if isSignedIn()
+        && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn()
+        && resource.data.uid == request.auth.uid;
+    }
+
+    // =========================================================================
+    // Ecommerce app only (added below — other app rules above unchanged)
+    // Paths: ecommerce/app/products, favorite, cartitem, users, orders
+    // =========================================================================
+
+    function isEcommerceAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/ecommerce/app/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/ecommerce/app/users/$(request.auth.uid)).data.get('admin', false) == true;
+    }
+
+    function isEcommerceOwner() {
+      return isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    function isEcommerceOwnerCreate() {
+      return isSignedIn() && request.resource.data.uid == request.auth.uid;
+    }
+
+    match /ecommerce/app/products/{productId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    match /ecommerce/app/favorite/{favoriteId} {
+      allow read: if isEcommerceOwner();
+      allow create: if isEcommerceOwnerCreate();
+      allow update, delete: if isEcommerceOwner();
+    }
+
+    match /ecommerce/app/cartitem/{cartId} {
+      allow read: if isEcommerceOwner();
+      allow create: if isEcommerceOwnerCreate();
+      allow update, delete: if isEcommerceOwner();
+    }
+
+    match /ecommerce/app/users/{userId} {
+      allow read, create, update, delete: if isSignedIn()
+        && request.auth.uid == userId;
+    }
+
+    match /ecommerce/app/orders/{orderId} {
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid
+        || isEcommerceAdmin()
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isEcommerceAdmin();
+    }
+
+    // Legacy top-level ecommerce paths (old data / log shorthand paths)
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
+    }
+
+    match /favorite/{favoriteId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    match /cartitem/{cartId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+  }
+}
