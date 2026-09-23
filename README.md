@@ -1,7 +1,7 @@
 # 🛍️ Ecommerce Multivendor Store
 
 Welcome to Ecommerce Multivendor Store – a feature-rich and user-friendly Ecommerce Multivendor Store app!
-ks
+
 ## ✨ Features
 
 - **🛒 Multivendor Support**: Allows multiple vendors to showcase and sell their products within the platform.
