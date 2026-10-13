@@ -223,7 +223,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                             ),
                             Switch(
                               value: _isPublished,
-                              activeThumbColor: Colors.white,
+                              inactiveThumbColor: Colors.white,
                               activeTrackColor: Colors.black,
                               onChanged: (value) {
                                 setState(() => _isPublished = value);

@@ -135,7 +135,7 @@ class CartScreen extends StatelessWidget {
                     return Card(
                       elevation: 6,
                       shadowColor: Colors.black,
-                      color: Colors.white.withValues(alpha: 0.7),
+                       color: Colors.white.withOpacity(0.7),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -172,13 +172,13 @@ class CartScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 5),
-                                  Text(
-                                    '\$${item['price']}',
-                                    style: TextStyle(
-                                      color: Colors.green[400],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                 Text(
+  'Rs ${item['price']}',
+  style: TextStyle(
+    color: Colors.green[400],
+    fontWeight: FontWeight.w500,
+  ),
+),
                                 ],
                               ),
                             ),
@@ -209,13 +209,13 @@ class CartScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            '\$${total.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                         Text(
+  'Rs ${total.toStringAsFixed(0)}',
+  style: const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  ),
+),
                         ],
                       ),
                       const SizedBox(height: 12),

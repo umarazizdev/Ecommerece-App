@@ -1,0 +1,2 @@
+D:/Ecommerece-App/android/app/.cxx/Debug/4m94q2t2/x86/CMakeFiles/edit_cache.dir
+D:/Ecommerece-App/android/app/.cxx/Debug/4m94q2t2/x86/CMakeFiles/rebuild_cache.dir

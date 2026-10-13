@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.addproduct"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.addproduct"
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
