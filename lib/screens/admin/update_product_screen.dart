@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:addproduct/constants/firebase_paths.dart';
+import 'package:addproduct/services/supabase_storage_service.dart';
 import 'package:addproduct/widgets/app_primary_button.dart';
 import 'package:addproduct/widgets/app_text_field.dart';
 import 'package:addproduct/widgets/product_network_image.dart';
@@ -77,9 +78,11 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
 
       String imageUrl = _currentImageUrl ?? '';
       if (_newImage != null) {
-        final ref = FirebasePaths.productImageRef(_imageFileName(_newImage!));
-        await ref.putFile(File(_newImage!.path));
-        imageUrl = await ref.getDownloadURL();
+        imageUrl = await SupabaseStorageService.uploadProductImageReplacing(
+          file: File(_newImage!.path),
+          fileName: _imageFileName(_newImage!),
+          previousPublicUrl: _currentImageUrl,
+        );
       }
 
       await FirebasePaths.productsCollection.doc(widget.productId).update({

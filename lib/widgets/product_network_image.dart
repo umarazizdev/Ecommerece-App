@@ -76,26 +76,39 @@ class ProductNetworkImage extends StatelessWidget {
   }
 
   Widget _error() {
+    final isCompact = (height != null && height! < 100) ||
+        (width != null && width! < 100);
+
     return Container(
       height: height,
       width: width,
       color: Colors.grey[200],
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.broken_image_outlined,
-            color: Colors.grey[500],
-            size: 36,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Image unavailable',
-            style: TextStyle(color: Colors.grey[600], fontSize: 11),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+      alignment: Alignment.center,
+      child: isCompact
+          ? Icon(
+              Icons.broken_image_outlined,
+              color: Colors.grey[500],
+              size: 28,
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.broken_image_outlined,
+                  color: Colors.grey[500],
+                  size: 36,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Image unavailable',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
     );
   }
 }

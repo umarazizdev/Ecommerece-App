@@ -57,9 +57,7 @@ class AdminProductsListScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebasePaths.productsCollection
-            .orderBy('name')
-            .snapshots(),
+        stream: FirebasePaths.productsCollection.orderBy('name').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Something went wrong'));
@@ -132,16 +130,17 @@ class AdminProductsListScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                           Text(
-  'Rs ${data['price']}',
-  style: const TextStyle(color: Colors.grey),
-),
+                            Text(
+                              'Rs ${data['price']}',
+                              style: const TextStyle(color: Colors.grey),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               isPublished ? 'Published' : 'Draft',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isPublished ? Colors.green : Colors.orange,
+                                color:
+                                    isPublished ? Colors.green : Colors.orange,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -150,7 +149,8 @@ class AdminProductsListScreen extends StatelessWidget {
                       ),
                       IconButton(
                         onPressed: () => _deleteProduct(context, doc.id),
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon:
+                            const Icon(Icons.delete_outline, color: Colors.red),
                       ),
                       const Icon(Icons.chevron_right, color: Colors.black),
                     ],

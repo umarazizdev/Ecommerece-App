@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebasePaths {
   static const String ecommerce = 'ecommerce';
@@ -9,7 +8,6 @@ class FirebasePaths {
   static const String cartitem = 'cartitem';
   static const String users = 'users';
   static const String orders = 'orders';
-  static const String images = 'image';
 
   static DocumentReference get _root =>
       FirebaseFirestore.instance.collection(ecommerce).doc(rootDoc);
@@ -43,7 +41,4 @@ class FirebasePaths {
   static CollectionReference get ordersCollection => _root.collection(orders);
 
   static DocumentReference userDoc(String uid) => usersCollection.doc(uid);
-
-  static Reference productImageRef(String fileName) =>
-      FirebaseStorage.instance.ref('$ecommerce/$images/$fileName');
 }

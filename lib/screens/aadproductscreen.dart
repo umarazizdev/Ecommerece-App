@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../constants/firebase_paths.dart';
 import '../main.dart';
+import '../services/supabase_storage_service.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -29,9 +30,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Future<void> uploadImage(XFile image) async {
     try {
       EasyLoading.show(status: 'Uploading product...');
-      final db = FirebasePaths.productImageRef(getImageName(image));
-      await db.putFile(File(image.path));
-      final imageUrl = await db.getDownloadURL();
+      final imageUrl = await SupabaseStorageService.uploadProductImage(
+        File(image.path),
+        getImageName(image),
+      );
 
       await users.add({
         'image': imageUrl,
