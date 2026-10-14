@@ -68,7 +68,7 @@ class ProductDetail extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${data['price']}',
+                       "Rs ${data['price']}",
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
