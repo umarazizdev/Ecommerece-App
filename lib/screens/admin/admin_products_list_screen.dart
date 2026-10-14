@@ -132,10 +132,10 @@ class AdminProductsListScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              '\$${data['price']}',
-                              style: const TextStyle(color: Colors.grey),
-                            ),
+                           Text(
+  'Rs ${data['price']}',
+  style: const TextStyle(color: Colors.grey),
+),
                             const SizedBox(height: 4),
                             Text(
                               isPublished ? 'Published' : 'Draft',

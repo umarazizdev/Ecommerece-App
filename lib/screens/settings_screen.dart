@@ -204,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: 'Receive order and offer updates',
                 trailing: Switch(
                   value: _notificationsEnabled,
-                  activeThumbColor: Colors.white,
+                  inactiveThumbColor: Colors.white,
                   activeTrackColor: Colors.black,
                   onChanged: (value) async {
                     setState(() => _notificationsEnabled = value);

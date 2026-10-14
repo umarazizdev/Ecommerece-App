@@ -157,11 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(
                                     height: 2,
                                   ),
-                                  Text(
-                                    "\$${data['price']}",
-                                    style: const TextStyle(
-                                        fontSize: 15, color: Colors.grey),
-                                  ),
+                                 Text(
+  "Rs ${data['price']}",
+  style: const TextStyle(fontSize: 15, color: Colors.grey),
+),
                                 ],
                               ),
                             ),

@@ -53,13 +53,13 @@ class CartProductDetail extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${data['price']}',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green[400],
-                        ),
-                      ),
+  'Rs ${data['price']}',
+  style: TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.bold,
+    color: Colors.green[400],
+  ),
+),
                     ],
                   ),
                   const SizedBox(height: 16),

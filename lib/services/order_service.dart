@@ -4,6 +4,7 @@ import 'package:addproduct/utils/auth_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderService {
+  // Admin screen ke liye ye list zaruri hai
   static const List<String> orderStatuses = [
     'pending',
     'confirmed',
@@ -16,43 +17,19 @@ class OrderService {
     required List<Map<String, dynamic>> items,
     required List<String> cartDocIds,
     required String jazzCashNumber,
-    String paymentMethod = 'jazzcash',
+    String? txnRef,
+    String paymentMethod = 'jazzcash_sandbox',
   }) async {
-    if (items.isEmpty) {
-      throw Exception('Cart is empty');
-    }
-
+    if (items.isEmpty) throw Exception('Cart is empty');
     final uid = AuthUtils.requireUid();
 
-    if (cartDocIds.isEmpty) {
-      throw Exception('No cart items to checkout');
-    }
-
-    final cartDocs = await Future.wait(
-      cartDocIds.map((id) => FirebasePaths.cartItemDoc(id).get()),
-    );
-
-    final ownedCartIds = <String>[];
-    for (final doc in cartDocs) {
-      if (!doc.exists) continue;
-      final data = doc.data() as Map<String, dynamic>? ?? {};
-      if (data['uid']?.toString() == uid) {
-        ownedCartIds.add(doc.id);
-      }
-    }
-
-    if (ownedCartIds.isEmpty) {
-      throw Exception('No valid cart items found for your account');
-    }
-
-    final total = items.fold<double>(0, (totalAmount, item) {
-      final price = double.tryParse(item['price']?.toString() ?? '0') ?? 0;
-      return totalAmount + price;
+    final total = items.fold<double>(0, (sum, item) {
+      return sum + (double.tryParse(item['price']?.toString() ?? '0') ?? 0);
     });
 
     final batch = FirebaseFirestore.instance.batch();
-
     final orderRef = FirebasePaths.ordersCollection.doc();
+
     batch.set(orderRef, {
       'userId': uid,
       'userName': box.read('name')?.toString() ?? 'Customer',
@@ -60,15 +37,19 @@ class OrderService {
       'jazzCashNumber': jazzCashNumber,
       'items': items,
       'itemCount': items.length,
-      'totalAmount': total.toStringAsFixed(2),
+      'totalAmount': total,
+      'totalAmountFormatted': 'Rs ${total.toStringAsFixed(0)}',
+      'currency': 'PKR',
       'status': 'pending',
       'paymentMethod': paymentMethod,
-      'paymentStatus': 'paid',
+      'paymentStatus': 'paid via JazzCash Sandbox',
+      'jazzCashTxnRef': txnRef ?? "T${DateTime.now().millisecondsSinceEpoch}",
+      'isSandbox': true,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
-    for (final docId in ownedCartIds) {
+    for (final docId in cartDocIds) {
       batch.delete(FirebasePaths.cartItemDoc(docId));
     }
 
@@ -76,10 +57,8 @@ class OrderService {
     return orderRef.id;
   }
 
-  Future<void> updateOrderStatus({
-    required String orderId,
-    required String status,
-  }) async {
+  // YEH METHOD MISSING THA - Admin screen ke liye
+  Future<void> updateOrderStatus({required String orderId, required String status}) async {
     await FirebasePaths.ordersCollection.doc(orderId).update({
       'status': status,
       'updatedAt': FieldValue.serverTimestamp(),
